@@ -9,8 +9,11 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
+
+import java.util.List;
 
 public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
@@ -23,7 +26,17 @@ public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
         MatrixStack matrices = context.matrixStack();
         Vec3d cam = context.camera().getPos();
 
-        for (BlockEntity be : mc.world.blockEntities) {
+        // Берём все блок энтити в радиусе 64 блока вокруг игрока
+        BlockPos playerPos = mc.player.getBlockPos();
+        int radius = 64;
+        Box searchBox = new Box(
+            playerPos.getX() - radius, playerPos.getY() - radius, playerPos.getZ() - radius,
+            playerPos.getX() + radius, playerPos.getY() + radius, playerPos.getZ() + radius
+        );
+
+        List<BlockEntity> blockEntities = mc.world.getBlockEntities(searchBox);
+
+        for (BlockEntity be : blockEntities) {
             float[] color = getColor(be);
             if (color == null) continue;
 
@@ -40,11 +53,11 @@ public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
     }
 
     private float[] getColor(BlockEntity be) {
-        if (be instanceof ChestBlockEntity)       return new float[]{1.0f, 0.8f, 0.0f}; // жёлтый
         if (be instanceof TrappedChestBlockEntity) return new float[]{1.0f, 0.2f, 0.2f}; // красный
-        if (be instanceof EnderChestBlockEntity)  return new float[]{0.5f, 0.0f, 1.0f}; // фиолетовый
-        if (be instanceof ShulkerBoxBlockEntity)  return new float[]{1.0f, 0.4f, 0.8f}; // розовый
-        if (be instanceof BarrelBlockEntity)      return new float[]{0.6f, 0.4f, 0.1f}; // коричневый
+        if (be instanceof ChestBlockEntity)        return new float[]{1.0f, 0.8f, 0.0f}; // жёлтый
+        if (be instanceof EnderChestBlockEntity)   return new float[]{0.5f, 0.0f, 1.0f}; // фиолетовый
+        if (be instanceof ShulkerBoxBlockEntity)   return new float[]{1.0f, 0.4f, 0.8f}; // розовый
+        if (be instanceof BarrelBlockEntity)       return new float[]{0.6f, 0.4f, 0.1f}; // коричневый
         return null;
     }
 
@@ -60,21 +73,20 @@ public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
         Matrix4f m = matrices.peek().getPositionMatrix();
         float r = color[0], g = color[1], b = color[2];
 
-        // Нижняя рамка
-        addLine(buffer, m, 0, 0, 0,  1, 0, 0,  r, g, b);
-        addLine(buffer, m, 1, 0, 0,  1, 0, 1,  r, g, b);
-        addLine(buffer, m, 1, 0, 1,  0, 0, 1,  r, g, b);
-        addLine(buffer, m, 0, 0, 1,  0, 0, 0,  r, g, b);
-        // Верхняя рамка
-        addLine(buffer, m, 0, 1, 0,  1, 1, 0,  r, g, b);
-        addLine(buffer, m, 1, 1, 0,  1, 1, 1,  r, g, b);
-        addLine(buffer, m, 1, 1, 1,  0, 1, 1,  r, g, b);
-        addLine(buffer, m, 0, 1, 1,  0, 1, 0,  r, g, b);
-        // Вертикали
-        addLine(buffer, m, 0, 0, 0,  0, 1, 0,  r, g, b);
-        addLine(buffer, m, 1, 0, 0,  1, 1, 0,  r, g, b);
-        addLine(buffer, m, 1, 0, 1,  1, 1, 1,  r, g, b);
-        addLine(buffer, m, 0, 0, 1,  0, 1, 1,  r, g, b);
+        addLine(buffer, m, 0,0,0,  1,0,0,  r,g,b);
+        addLine(buffer, m, 1,0,0,  1,0,1,  r,g,b);
+        addLine(buffer, m, 1,0,1,  0,0,1,  r,g,b);
+        addLine(buffer, m, 0,0,1,  0,0,0,  r,g,b);
+
+        addLine(buffer, m, 0,1,0,  1,1,0,  r,g,b);
+        addLine(buffer, m, 1,1,0,  1,1,1,  r,g,b);
+        addLine(buffer, m, 1,1,1,  0,1,1,  r,g,b);
+        addLine(buffer, m, 0,1,1,  0,1,0,  r,g,b);
+
+        addLine(buffer, m, 0,0,0,  0,1,0,  r,g,b);
+        addLine(buffer, m, 1,0,0,  1,1,0,  r,g,b);
+        addLine(buffer, m, 1,0,1,  1,1,1,  r,g,b);
+        addLine(buffer, m, 0,0,1,  0,1,1,  r,g,b);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
