@@ -13,74 +13,74 @@ import org.slf4j.LoggerFactory;
 
 public class PlayerESPClient implements ClientModInitializer {
 
-    // Might refactor MOD_ID later if needed in multiple classes
     public static final String MOD_ID = "playeresp";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    // Global key bindings
     private static KeyBinding hitboxKey;
     private static KeyBinding nameKey;
     private static KeyBinding configKey;
+    private static KeyBinding chestKey; // новая кнопка для сундуков
 
-    // State flags
     private static boolean shouldShowHitbox = true;
     private static boolean shouldShowName = true;
+    private static boolean chestESPEnabled = true; // сундуки включены по умолчанию
 
     @Override
     public void onInitializeClient() {
         LOGGER.info("[PlayerESP] Client init started...");
 
-        // Registering key bindings – note: I chose these keys mostly arbitrarily
         hitboxKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.playeresp.toggle_hitbox",
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_H, // H for Hitbox
+            GLFW.GLFW_KEY_H,
             "category.playeresp.main"
         ));
 
         nameKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.playeresp.toggle_name",
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_N, // N for Name
+            GLFW.GLFW_KEY_N,
             "category.playeresp.main"
         ));
 
         configKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.playeresp.open_config",
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_J, // No real reason – just felt right
+            GLFW.GLFW_KEY_J,
             "category.playeresp.main"
         ));
 
-        // Hooking into tick loop to listen for key presses
+        chestKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.playeresp.toggle_chest",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_C, // C для сундуков
+            "category.playeresp.main"
+        ));
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            // Tick target ESP manager every game tick
             TargetESPManager.tick();
-            // Handle hitbox toggle
+
             if (hitboxKey.wasPressed()) {
                 shouldShowHitbox = !shouldShowHitbox;
-
-                if (client.player != null) {
+                if (client.player != null)
                     client.player.sendMessage(
-                        net.minecraft.text.Text.literal("Hitbox ESP is now " + (shouldShowHitbox ? "enabled" : "disabled")),
-                        true
-                    );
-                }
+                        net.minecraft.text.Text.literal("Hitbox ESP: " + (shouldShowHitbox ? "§aON" : "§cOFF")), true);
             }
 
-            // Handle name label toggle
             if (nameKey.wasPressed()) {
                 shouldShowName = !shouldShowName;
-
-                if (client.player != null) {
+                if (client.player != null)
                     client.player.sendMessage(
-                        net.minecraft.text.Text.literal("Name ESP is now " + (shouldShowName ? "enabled" : "disabled")),
-                        true
-                    );
-                }
+                        net.minecraft.text.Text.literal("Name ESP: " + (shouldShowName ? "§aON" : "§cOFF")), true);
             }
 
-            // Config screen trigger (this could maybe be moved to a command instead)
+            if (chestKey.wasPressed()) {
+                chestESPEnabled = !chestESPEnabled;
+                if (client.player != null)
+                    client.player.sendMessage(
+                        net.minecraft.text.Text.literal("Chest ESP: " + (chestESPEnabled ? "§aON" : "§cOFF")), true);
+            }
+
             if (configKey.wasPressed()) {
                 if (client.currentScreen == null) {
                     client.setScreen(new com.bitartisan1.playeresp.gui.PlayerESPConfigScreen(null));
@@ -88,29 +88,17 @@ public class PlayerESPClient implements ClientModInitializer {
             }
         });
 
-        // Visual rendering hook for our ESP overlay stuff
         WorldRenderEvents.AFTER_TRANSLUCENT.register(new PlayerESPRenderer());
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(new ChestESPRenderer()); // регистрируем сундуки
 
-        // Register custom client-side commands
         ClientCommandRegistrationCallback.EVENT.register(PlayerESPCommand::register);
-
-        // Might eventually add more here later, e.g., telemetry or settings file loading
     }
 
-    // Just quick accessors — might want to move to a config singleton eventually
-    public static boolean isShowHitbox() {
-        return shouldShowHitbox;
-    }
+    public static boolean isShowHitbox() { return shouldShowHitbox; }
+    public static boolean isShowName() { return shouldShowName; }
+    public static boolean isChestESPEnabled() { return chestESPEnabled; }
 
-    public static boolean isShowName() {
-        return shouldShowName;
-    }
-
-    public static void setShowHitbox(boolean value) {
-        shouldShowHitbox = value;
-    }
-
-    public static void setShowName(boolean value) {
-        shouldShowName = value;
-    }
+    public static void setShowHitbox(boolean value) { shouldShowHitbox = value; }
+    public static void setShowName(boolean value) { shouldShowName = value; }
+    public static void setChestESPEnabled(boolean value) { chestESPEnabled = value; }
 }
