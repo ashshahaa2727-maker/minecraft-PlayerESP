@@ -1,0 +1,15 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.bitartisan1.playeresp.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "refmap": "playeresp.refmap.json",
+    "mixins": [
+    ],
+    "client": [
+        "PlayerAttackMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}
