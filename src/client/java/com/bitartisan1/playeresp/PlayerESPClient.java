@@ -54,6 +54,8 @@ public class PlayerESPClient implements ClientModInitializer {
 
         // Hooking into tick loop to listen for key presses
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            // Tick target ESP manager every game tick
+            TargetESPManager.tick();
             // Handle hitbox toggle
             if (hitboxKey.wasPressed()) {
                 shouldShowHitbox = !shouldShowHitbox;
