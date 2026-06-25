@@ -8,12 +8,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
-
-import java.util.List;
 
 public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
@@ -25,30 +25,32 @@ public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
 
         MatrixStack matrices = context.matrixStack();
         Vec3d cam = context.camera().getPos();
+        ClientWorld world = mc.world;
 
-        // Берём все блок энтити в радиусе 64 блока вокруг игрока
         BlockPos playerPos = mc.player.getBlockPos();
-        int radius = 64;
-        Box searchBox = new Box(
-            playerPos.getX() - radius, playerPos.getY() - radius, playerPos.getZ() - radius,
-            playerPos.getX() + radius, playerPos.getY() + radius, playerPos.getZ() + radius
-        );
+        int chunkRadius = 4;
+        ChunkPos centerChunk = new ChunkPos(playerPos);
 
-        List<BlockEntity> blockEntities = mc.world.getBlockEntities(searchBox);
+        for (int cx = centerChunk.x - chunkRadius; cx <= centerChunk.x + chunkRadius; cx++) {
+            for (int cz = centerChunk.z - chunkRadius; cz <= centerChunk.z + chunkRadius; cz++) {
+                WorldChunk chunk = world.getChunkManager().getWorldChunk(cx, cz);
+                if (chunk == null) continue;
 
-        for (BlockEntity be : blockEntities) {
-            float[] color = getColor(be);
-            if (color == null) continue;
+                for (BlockEntity be : chunk.getBlockEntities().values()) {
+                    float[] color = getColor(be);
+                    if (color == null) continue;
 
-            BlockPos pos = be.getPos();
-            double x = pos.getX() - cam.x;
-            double y = pos.getY() - cam.y;
-            double z = pos.getZ() - cam.z;
+                    BlockPos pos = be.getPos();
+                    double x = pos.getX() - cam.x;
+                    double y = pos.getY() - cam.y;
+                    double z = pos.getZ() - cam.z;
 
-            matrices.push();
-            matrices.translate(x, y, z);
-            renderBox(matrices, color);
-            matrices.pop();
+                    matrices.push();
+                    matrices.translate(x, y, z);
+                    renderBox(matrices, color);
+                    matrices.pop();
+                }
+            }
         }
     }
 
