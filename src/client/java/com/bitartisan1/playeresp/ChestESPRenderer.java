@@ -15,11 +15,11 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 
-public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
+public class ChestESPRenderer implements WorldRenderEvents.BeforeDebugRenderers {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
 
     @Override
-    public void afterTranslucent(WorldRenderContext context) {
+    public void beforeDebugRenderers(WorldRenderContext context) {
         if (mc.world == null || mc.player == null) return;
         if (!PlayerESPClient.isChestESPEnabled()) return;
 
@@ -55,11 +55,11 @@ public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
     }
 
     private float[] getColor(BlockEntity be) {
-        if (be instanceof TrappedChestBlockEntity) return new float[]{1.0f, 0.2f, 0.2f}; // красный
-        if (be instanceof ChestBlockEntity)        return new float[]{1.0f, 0.8f, 0.0f}; // жёлтый
-        if (be instanceof EnderChestBlockEntity)   return new float[]{0.5f, 0.0f, 1.0f}; // фиолетовый
-        if (be instanceof ShulkerBoxBlockEntity)   return new float[]{1.0f, 0.4f, 0.8f}; // розовый
-        if (be instanceof BarrelBlockEntity)       return new float[]{0.6f, 0.4f, 0.1f}; // коричневый
+        if (be instanceof TrappedChestBlockEntity) return new float[]{1.0f, 0.2f, 0.2f};
+        if (be instanceof ChestBlockEntity)        return new float[]{1.0f, 0.8f, 0.0f};
+        if (be instanceof EnderChestBlockEntity)   return new float[]{0.5f, 0.0f, 1.0f};
+        if (be instanceof ShulkerBoxBlockEntity)   return new float[]{1.0f, 0.4f, 0.8f};
+        if (be instanceof BarrelBlockEntity)       return new float[]{0.6f, 0.4f, 0.1f};
         return null;
     }
 
