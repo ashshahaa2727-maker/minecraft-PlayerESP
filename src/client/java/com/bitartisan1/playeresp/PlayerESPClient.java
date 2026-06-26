@@ -89,7 +89,8 @@ public class PlayerESPClient implements ClientModInitializer {
         });
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(new PlayerESPRenderer());
-        WorldRenderEvents.BEFORE_DEBUG_RENDERERS.register(new ChestESPRenderer());
+        // Строка изменена обратно на AFTER_TRANSLUCENT
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(new ChestESPRenderer());
 
         ClientCommandRegistrationCallback.EVENT.register(PlayerESPCommand::register);
     }
