@@ -19,11 +19,11 @@ public class PlayerESPClient implements ClientModInitializer {
     private static KeyBinding hitboxKey;
     private static KeyBinding nameKey;
     private static KeyBinding configKey;
-    private static KeyBinding chestKey; // новая кнопка для сундуков
+    private static KeyBinding chestKey;
 
     private static boolean shouldShowHitbox = true;
     private static boolean shouldShowName = true;
-    private static boolean chestESPEnabled = true; // сундуки включены по умолчанию
+    private static boolean chestESPEnabled = true;
 
     @Override
     public void onInitializeClient() {
@@ -53,7 +53,7 @@ public class PlayerESPClient implements ClientModInitializer {
         chestKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.playeresp.toggle_chest",
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_C, // C для сундуков
+            GLFW.GLFW_KEY_C,
             "category.playeresp.main"
         ));
 
@@ -89,7 +89,7 @@ public class PlayerESPClient implements ClientModInitializer {
         });
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(new PlayerESPRenderer());
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(new ChestESPRenderer()); // регистрируем сундуки
+        WorldRenderEvents.BEFORE_DEBUG_RENDERERS.register(new ChestESPRenderer());
 
         ClientCommandRegistrationCallback.EVENT.register(PlayerESPCommand::register);
     }
