@@ -15,11 +15,11 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 
-public class ChestESPRenderer implements WorldRenderEvents.BeforeDebugRenderers {
+public class ChestESPRenderer implements WorldRenderEvents.AfterTranslucent {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
 
     @Override
-    public void beforeDebugRenderers(WorldRenderContext context) {
+    public void afterTranslucent(WorldRenderContext context) {
         if (mc.world == null || mc.player == null) return;
         if (!PlayerESPClient.isChestESPEnabled()) return;
 
